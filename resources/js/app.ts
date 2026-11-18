@@ -20,7 +20,9 @@ declare module 'vite/client' {
     }
 }
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+// Nome vem do APP_NAME do servidor em tempo de execução (meta tag no app.blade.php),
+// assim o build do Docker não precisa conhecer o .env.
+const appName = document.querySelector<HTMLMetaElement>('meta[name="application-name"]')?.content || import.meta.env.VITE_APP_NAME || 'Azure Facilities';
 
 createInertiaApp({
     title: (title) => `${title} - ${appName}`,
