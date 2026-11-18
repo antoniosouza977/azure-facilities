@@ -145,7 +145,33 @@ um aviso pedindo o escopo, e a de PRs continua funcionando.
 
 ## Produção (VPS)
 
-`docker-compose.prod.yml` é um rascunho: roda só o app (PHP-FPM + Nginx na
-porta 8080, usuário sem privilégios, migrations automáticas no start) nas redes
-externas do Nginx Proxy Manager e do Postgres/Redis já existentes. Será
-detalhado na etapa de deploy.
+Roda só o app (PHP-FPM + Nginx na porta 8080, usuário sem privilégios,
+migrations automáticas na subida) e usa o que já existe na VPS:
+
+| Serviço | Onde | Observação |
+|---|---|---|
+| Postgres | container `postgres`, rede `db_net` | banco e usuário `azure_facilities` próprios |
+| Redis | container `redis`, rede `db_net` | com senha; usa os bancos 2 e 3 e prefixo `azure_facilities_` (0 e 1 são de outra app) |
+| Proxy/TLS | Nginx Proxy Manager, rede `proxy` | proxy host → `http://azure-facilities:8080` |
+
+```bash
+# 1. Banco e usuário no Postgres compartilhado (uma vez)
+docker exec -i postgres psql -U pgadmin -d postgres <<SQL
+CREATE ROLE azure_facilities LOGIN PASSWORD '<senha>';
+CREATE DATABASE azure_facilities OWNER azure_facilities;
+SQL
+
+# 2. Variáveis de ambiente
+cp .env.production.example .env.production
+#    preencha APP_URL, DB_PASSWORD, REDIS_PASSWORD, APP_KEY e AZURE_TOKEN_KEYS
+#    APP_KEY:          echo "base64:$(openssl rand -base64 32)"
+#    AZURE_TOKEN_KEYS: echo "1:$(openssl rand -base64 32)"
+
+# 3. Subir / atualizar
+git pull && docker compose -f docker-compose.prod.yml up -d --build
+```
+
+No Nginx Proxy Manager, crie um proxy host para o domínio apontando para
+`azure-facilities`, porta `8080`, esquema `http`, com certificado SSL e
+"Force SSL". O app confia nos cabeçalhos `X-Forwarded-*` do proxy
+(`trustProxies`), então gera URLs `https`.

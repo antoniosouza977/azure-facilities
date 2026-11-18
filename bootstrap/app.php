@@ -13,6 +13,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        // Em produção o Nginx Proxy Manager termina o TLS e repassa via HTTP;
+        // confiar nos cabeçalhos X-Forwarded-* faz o Laravel gerar URLs https.
+        $middleware->trustProxies(at: '*');
+
         $middleware->web(append: [
             HandleInertiaRequests::class,
             AddLinkHeadersForPreloadedAssets::class,

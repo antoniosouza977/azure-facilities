@@ -3,10 +3,9 @@
 use App\Http\Controllers\PullRequestController;
 use App\Http\Controllers\WorkItemController;
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 Route::get('/', function () {
-    return auth()->check() ? to_route('pull-requests.index') : Inertia::render('Welcome');
+    return auth()->check() ? to_route('pull-requests.index') : to_route('login');
 })->name('home');
 
 Route::middleware(['auth', 'verified'])->group(function () {

@@ -1,10 +1,15 @@
-# Ambiente de PRODUÇÃO (VPS) — RASCUNHO, será refinado na etapa de deploy.
+# Ambiente de PRODUÇÃO (VPS).
 #
-# Premissas:
-#   - Postgres e Redis já rodam em containers na VPS (não sobem aqui).
-#   - Nginx Proxy Manager faz o TLS e encaminha para app:8080.
-#   - Os nomes das redes externas abaixo precisam bater com as da VPS.
+# Usa a infraestrutura que já roda na VPS:
+#   - Postgres: container "postgres" na rede "db_net"
+#   - Redis:    container "redis"    na rede "db_net" (com senha; bancos 2 e 3,
+#               os bancos 0 e 1 são de outra aplicação)
+#   - Nginx Proxy Manager (rede "proxy") faz o TLS e encaminha para
+#     http://azure-facilities:8080
 #
+# As migrations rodam sozinhas na subida (AUTORUN_LARAVEL_MIGRATION).
+#
+#   cp .env.production.example .env.production   # e preencha
 #   docker compose -f docker-compose.prod.yml up -d --build
 
 name: azure-facilities
@@ -15,18 +20,24 @@ services:
       context: .
       target: production
     image: azure-facilities:latest
+    container_name: azure-facilities
     restart: unless-stopped
     env_file: .env.production
     expose:
       - "8080"
+    volumes:
+      - storage:/var/www/html/storage/app
     networks:
       - proxy
-      - backend
+      - db_net
+
+volumes:
+  storage:
 
 networks:
   proxy:
     external: true
-    name: ${PROXY_NETWORK:-npm_default}
-  backend:
+    name: ${PROXY_NETWORK:-proxy}
+  db_net:
     external: true
-    name: ${BACKEND_NETWORK:-database_default}
+    name: ${BACKEND_NETWORK:-db_net}
