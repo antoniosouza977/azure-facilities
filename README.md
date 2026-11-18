@@ -145,6 +145,9 @@ um aviso pedindo o escopo, e a de PRs continua funcionando.
 
 ## Produção (VPS)
 
+> Documentação completa da infraestrutura, deploy, operação e segurança em
+> [`docs/`](docs/README.md).
+
 Roda só o app (PHP-FPM + Nginx na porta 8080, usuário sem privilégios,
 migrations automáticas na subida) e usa o que já existe na VPS:
 
