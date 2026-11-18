@@ -175,3 +175,7 @@ No Nginx Proxy Manager, crie um proxy host para o domínio apontando para
 `azure-facilities`, porta `8080`, esquema `http`, com certificado SSL e
 "Force SSL". O app confia nos cabeçalhos `X-Forwarded-*` do proxy
 (`trustProxies`), então gera URLs `https`.
+
+## Licença
+
+[MIT](LICENSE) © 2026 Antonio Souza
